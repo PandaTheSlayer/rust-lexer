@@ -44,7 +44,7 @@ pub struct Expression<'a> {
     department: Operand<'a>,
 }
 
-pub fn tokenize<'a>(string: &'a str) -> Fallible<Expression<'a>> {
+pub fn tokenize(string: &str) -> Fallible<Expression> {
     let mut words = string.split_whitespace();
     let regex = Regex::new("[A-Za-z]+").context("regex build error")?;
     let operation = words

@@ -1,8 +1,8 @@
+pub mod department;
 pub mod lexer;
 pub mod user;
-pub mod department;
 
 fn main() {
-    let expression = lexer::tokenize("Add Panda Rust".to_string());
+    let expression = lexer::tokenize("Add Panda Rust");
     println!("{:?}", expression)
 }

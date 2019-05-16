@@ -1,8 +1,8 @@
 [package]
 name = "management-system"
 version = "0.1.0"
-authors = ["nnkvi"]
-edition = "2018"
+authors = ["PandaTheSlayer"]
+edition = "2019"
 
 [dependencies]
 regex     = "=1.1.6"

@@ -1,8 +1,6 @@
-use crate::department::department::Department;
-use crate::user::User;
-use self::regex::Regex;
-
-extern crate regex;
+use failure::{bail, err_msg, format_err, Error, Fallible, ResultExt};
+use regex::Regex;
+use std::str::FromStr;
 
 #[derive(Debug)]
 pub enum Operation {
@@ -10,48 +8,60 @@ pub enum Operation {
     Remove,
 }
 
-#[derive(Debug)]
-pub struct Operand {
-    value: String
+impl FromStr for Operation {
+    type Err = Error;
+
+    fn from_str(s: &str) -> Fallible<Self> {
+        Ok(match s {
+            "Add" => Operation::Add,
+            "Remove" => Operation::Remove,
+            _ => bail!("panda"),
+        })
+    }
 }
 
 #[derive(Debug)]
-pub struct Expression {
+pub struct Operand<'a>(&'a str);
+
+impl<'a> Operand<'a> {
+    fn new_with_regex(regex: &Regex, value: &'a str) -> Fallible<Self> {
+        if regex.is_match(value) {
+            Ok(Operand(value))
+        } else {
+            Err(format_err!(
+                "operand regex validation fail, regex: {:#?}, operand: {}",
+                regex,
+                value
+            ))
+        }
+    }
+}
+
+#[derive(Debug)]
+pub struct Expression<'a> {
     operation: Operation,
-    user: Operand,
-    department: Operand,
+    user: Operand<'a>,
+    department: Operand<'a>,
 }
 
-pub fn tokenize(string: String) -> Expression {
-    let words = string.split(" ").collect::<Vec<_>>();
-
-    if words.len() != 3 { panic!("Expression must be 3 words length!") }
-
-    let operation = match words[0] {
-        "Add" => Operation::Add,
-        "Remove" => Operation::Remove,
-        _ => panic!("Undefined operation!")
-    };
-
-//    let user = match words[1] {
-//        "[A-Za-z]" => Operand { value: words[1].to_string() },
-//        _ => panic!("Operand must contain only latin symbols!")
-//    };
-
-    let re = Regex::new("[A-Za-z]+").unwrap();
-    assert!(re.is_match(words[1]));
-
-    if Regex::new("[A-Za-z]+").unwrap().is_match(words[1]) {
-        let user = words[1];
-    }
-
-    if Regex::new("[A-Za-z]+").unwrap().is_match(words[2]) {
-        let department = words[1];
-    }
-
-    return Expression {
+pub fn tokenize(string: &str) -> Fallible<Expression> {
+    let mut words = string.split_whitespace();
+    let regex = Regex::new("[A-Za-z]+").context("regex build error")?;
+    let operation = words
+        .next()
+        .map(Operation::from_str)
+        .ok_or_else(|| err_msg("operation not found"))??;
+    let user = words
+        .next()
+        .map(|user| Operand::new_with_regex(&regex, user))
+        .ok_or_else(|| err_msg("user not found"))??;
+    let department = words
+        .next()
+        .map(|department| Operand::new_with_regex(&regex, department))
+        .ok_or_else(|| err_msg("department not found"))??;
+    Ok(Expression {
         operation,
         user,
-        department
-    };
+        department,
+    })
 }

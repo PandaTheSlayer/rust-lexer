@@ -15,7 +15,7 @@ impl FromStr for Operation {
         Ok(match s {
             "Add" => Operation::Add,
             "Remove" => Operation::Remove,
-            _ => bail!("panda"),
+            _ => bail!("'{}' operation not supported!", s),
         })
     }
 }
@@ -46,7 +46,7 @@ pub struct Expression<'a> {
 
 pub fn tokenize(string: &str) -> Fallible<Expression> {
     let mut words = string.split_whitespace();
-    let regex = Regex::new("[A-Za-z]+").context("regex build error")?;
+    let regex = Regex::new("^[A-Za-z]+$").context("regex build error")?;
     let operation = words
         .next()
         .map(Operation::from_str)

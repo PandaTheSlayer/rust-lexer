@@ -3,6 +3,6 @@ pub mod lexer;
 pub mod user;
 
 fn main() {
-    let expression = lexer::tokenize("Add Panda Rust");
+    let expression = lexer::tokenize("Ad Panda Rust");
     println!("{:?}", expression)
 }
